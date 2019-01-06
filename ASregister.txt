@@ -1,0 +1,93 @@
+public class Register extends AppCompatActivity implements View.OnClickListener{
+ 
+    private EditText regUserName;
+    private EditText regPassWord;
+    private Button btn_reg;
+ 
+    ProgressDialog dialog;
+ 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_register);
+        //修改标题栏title
+        ActionBar ac = getSupportActionBar();
+        ac.setTitle("注册");
+ 
+        //初始化
+        regUserName = (EditText)findViewById(R.id.regUserName);
+        regPassWord = (EditText)findViewById(R.id.regPassWord);
+        btn_reg = (Button)findViewById(R.id.btn_reg);
+ 
+        btn_reg.setOnClickListener(this);
+    }
+ 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.btn_reg:
+                dialog = new ProgressDialog(Register.this);
+                dialog.setTitle("正在注册");
+                dialog.setMessage("请稍后");
+                dialog.show();
+ 
+                new Thread(new RegThread()).start();
+                break;
+        }
+    }
+ 
+    public class RegThread implements Runnable{
+        @Override
+        public void run() {
+ 
+            //获取服务器返回数据
+            //String RegRet = WebServiceGet.executeHttpGet(regUserName.getText().toString(),regPassWord.getText().toString(),"RegLet");
+            String RegRet = WebServicePost.executeHttpPost(regUserName.getText().toString(),regPassWord.getText().toString(),"RegLet");
+ 
+            //更新UI，界面处理
+            showReq(RegRet);
+        }
+    }
+    private void showReq(final String RegRet){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(RegRet.equals("true")){
+                    dialog.dismiss();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Register.this);
+                    builder.setTitle("注册信息");
+                    builder.setMessage("注册成功");
+                    builder.setCancelable(false);
+                    builder.setPositiveButton("OK",new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            Intent intent = new Intent(Register.this,Login.class);
+                            startActivity(intent);
+                        }
+                    });
+                    builder.show();
+                }else{
+                    dialog.dismiss();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(Register.this);
+                    builder.setTitle("注册信息");
+                    builder.setMessage("注册失败");
+                    builder.setCancelable(false);
+                    builder.setPositiveButton("OK",new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            Intent intent = new Intent(Register.this,Login.class);
+                            startActivity(intent);
+                        }
+                    });
+                    builder.show();
+                }
+            }
+        });
+    }
+}
+
+--------------------- 
+作者：zhann98 
+来源：CSDN 
+原文：https://blog.csdn.net/qq_33991989/article/details/79462923 
+版权声明：本文为博主原创文章，转载请附上博文链接！
