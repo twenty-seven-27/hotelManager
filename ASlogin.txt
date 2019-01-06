@@ -1,0 +1,95 @@
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.accessibility.AccessibilityManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.zdd.com.web.WebServiceGet;
+ 
+public class Login extends AppCompatActivity implements View.OnClickListener{
+ 
+    private EditText username;
+    private EditText password;
+    private Button login;
+    private TextView info;
+    private TextView register;
+    //提示框
+    private ProgressDialog dialog;
+    //服务器返回的数据
+    private String infoString;
+ 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
+ 
+        //初始化信息
+        username = (EditText)findViewById(R.id.username);
+        password = (EditText)findViewById(R.id.password);
+        login = (Button)findViewById(R.id.btn_login);
+        info = (TextView)findViewById(R.id.info);
+        register = (TextView)findViewById(R.id.register);
+ 
+        //设置按钮监听器
+        login.setOnClickListener(this);
+        register.setOnClickListener(this);
+    }
+ 
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.btn_login:
+                //设置提示框
+                dialog = new ProgressDialog(Login.this);
+                dialog.setTitle("正在登陆");
+                dialog.setMessage("请稍后");
+                dialog.setCancelable(false);//设置可以通过back键取消
+                dialog.show();
+ 
+                //设置子线程，分别进行Get和Post传输数据
+                new Thread(new MyThread()).start();
+ 
+                break;
+            case R.id.register:
+                //跳转注册页面
+                Intent intent = new Intent(Login.this,Register.class);
+                startActivity(intent);
+                break;
+        }
+    }
+ 
+    public class MyThread implements Runnable{
+        @Override
+        public void run() {
+            infoString = WebServiceGet.executeHttpGet(username.getText().toString(),password.getText().toString(),"LogLet");//获取服务器返回的数据
+ 
+            //更新UI，使用runOnUiThread()方法
+            showResponse(infoString);
+        }
+    }
+    private void showResponse(final String response){
+        runOnUiThread(new Runnable() {
+            //更新UI
+            @Override
+            public void run() {
+                if(response.equals("false")){
+                    Toast.makeText(Login.this,"登陆失败！", Toast.LENGTH_SHORT).show();
+                }else {
+                    info.setText(response);
+                }
+                dialog.dismiss();
+            }
+        });
+    }
+}
+
+--------------------- 
+作者：zhann98 
+来源：CSDN 
+原文：https://blog.csdn.net/qq_33991989/article/details/79462923 
+版权声明：本文为博主原创文章，转载请附上博文链接！
